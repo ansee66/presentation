@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/black.css" />
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>TypeScript: Generics and Conditional Types</h1>
+
+          <aside class="notes">
+            Hello! Today I would like to tell you about TypeScript, and more specifically, about such a part of TypeScript as generics and conditional types.
+            To begin with, I would like to mention a little about TypeScript. 
+            It’s a strongly typed programming language based on JavaScript. According to the official TypeScript website, 78% of web developers use TypeScript in their projects.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Why do we need typescript?</h2>
+          <br />
+          <ol>
+            <li>Catching errors at an early stage (during compilation)</li>
+            <li>TypeScript makes code cleaner and more readable</li>
+            <li>Convenience of working in the IDE</li>
+          </ol>
+
+          <aside class="notes">
+            1. According to some studies, in large projects, overwriting data types and incorrect work with them is the cause of 20% of bugs in the code.
+            TypeScript offers strict typing and automatic property checking, which allows to prevent errors at an early stage - during compilation.
+            2. The second advantage is that, in TypeScript, all types are defined and documented, which makes the code cleaner and easier to read, even for someone who has just joined the project.
+            3. And another advantage of TypeScript that I would like to note is the ease of working with code in the IDE, thanks to additional hints and chips.
+            Thus, summing up the above, we can say that developers use TypeScript to facilitate the writing, refactoring and maintenance of the code base, as well as to reduce the number of uncaught errors.
+            And now let's move on to one of the main features of TypeScript — generics.
+          </aside>
+        </section>
+
+        <section>
+          <h2>What are generics?</h2>
+          <br />
+          <p>Types which take parameters.</p>
+          <br />
+          <p>Examples: <code>Promise&lt;T&gt;, Array&lt;T&gt;</code></p>
+
+          <aside class="notes">
+            Generics are parameterized types that are used to work with data structures. We can say that generics are something like a function over types.
+            Some of the most commonly used generics in TypeScript are promises and arrays.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Basic syntax</h2>
+          <br />
+          <pre>
+            <code class="language-typescript hljs" data-trim data-noescape  data-line-numbers="1-3,5,7">
+              <script type="text/template">
+                function identity<T>(arg: T): T {
+                  return arg;
+                }  
+
+                const way1 = identity<string>("something");
+
+                const way2 = identity("something");
+              </script>
+            </code>    
+          </pre>
+
+          <aside class="notes">
+            For demonstration basic syntax of Generics, let's use the classic example of the identity function given in the TypeScript documentation. To write a generic is used a type variable, a special kind of variable that works on types rather than values. Type variable is written in the angle brackets (<>):
+            When calling the generic function, we can directly specify the type, or we can use the type inference feature provided by TypeScript.
+            While type argument inference can be a helpful tool to keep code shorter and more readable, you may need to explicitly pass in the type arguments when the compiler fails to infer the type, as may happen in more complex examples.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Generics in interfaces</h2>
+          <br />
+          <pre>
+            <code class="language-typescript hljs" data-trim data-noescape  data-line-numbers="1-5, 7-8">
+              <script type="text/template">
+                interface State<T> {
+                  loading: boolean;
+                  error: Error | null;
+                  data: T;
+                }
+
+                type UserState = State<User>;
+                type ProductState = State<Product>;  
+              </script>
+            </code>    
+          </pre>
+
+          <aside class="notes">
+            Generics can also be used in interfaces. For example, we want to describe the data that comes from the API: regardless of the specific type of data requested, we will have some common fields. In this case, the generic allows us to describe some abstract interface - let's call it State, and on its basis create already specific types, for example, UserState and ProductState, passing the corresponding types to generic.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Generics in classes</h2>
+          <br />
+          <pre>
+            <code class="language-typescript hljs" data-trim data-noescape data-line-numbers="1-2, 4, 6-7, 9-10, 12-13">
+              <script type="text/template">
+                class Collection<T> {
+                  constructor(items: T[]) {}
+                  // ...
+                }
+                
+                const numbers = new Collection([1, 2]); 
+                // Collection<number>
+
+                const strings = new Collection(['1', '2']); 
+                // Collection<string>
+
+                const stringAndNumbers = new Collection(['1', 2]);
+                // Collection<string | number>
+              </script>
+            </code>    
+          </pre>
+
+          <aside class="notes">
+            Generics in Classes are described in much the same way as Generics in interfaces. Let's consider a simple example of such a class - a collection that accepts an array of elements of type T in the constructor. And in the future we can create instances of this class with different data types - arrays of strings, numbers or mixed data.
+            Notice that for these instances TypeScript itself will infer the desired type.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Generic Constraints</h2>
+          <pre>
+            <code class="language-typescript hljs" data-trim data-noescape data-line-numbers="1-3">
+              <script type="text/template">
+                function getLength<T>(arg: T): number {
+                  return arg.length;
+                }
+              </script>
+            </code>
+            <code class="language-typescript hljs" data-trim data-noescape>
+              <span class="hljs-comment">// Error: Property 'length' does not exist on type 'T'.</span>
+            </code>  
+          </pre>
+          <pre>
+            <code class="language-typescript hljs" data-trim data-noescape data-line-numbers="1-3">
+              <script type="text/template">
+                function getLength<T extends {length: number}>(arg: T): number {
+                  return arg.length;
+                }
+              </script>
+            </code> 
+          </pre>
+          <pre>
+            <code class="language-typescript hljs" data-trim data-noescape data-line-numbers="1-3, 5-7">
+              <script type="text/template">
+                interface WithLength {
+                  length: number;
+                }
+
+                function getLength<T extends WithLength>(arg: T): number {
+                  return arg.length;
+                }
+              </script>
+            </code> 
+          </pre>
+
+          <aside class="notes">
+            Generics allow us to work with any type of data. However, sometimes it becomes necessary to use not any type, but only a certain set of types that meets certain criteria. For example, let's take a function that returns the length of the passed arguments.
+            If we just pass the type T to it, then TypeScript will give us the error that Property 'length' does not exist on type 'T'. So we need to restrict the type T used in this generic. To do this, the keyword “extends” is used, after which a criterion is specified to which the data types passed instead of the "T" parameter should correspond.
+            For example, in the case of the getLength() function, the types must have the length property. The two lower code examples demonstrate how this can be done: if we have a simple criterion, then we can specify it directly when defining the function, if not, then it is possible to put it in a separate interface.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Using Type Parameters in Generic Constraints</h2>
+          <br>
+          <pre>
+            <code class="language-typescript hljs" data-trim data-noescape data-line-numbers="1-5, 7, 9, 10">
+              <script type="text/template">
+                function getValue<T extends object, K extends keyof T>(
+                  obj: T, key: K
+                ) {
+                  return obj[key];
+                }
+
+                const obj = { a: 1, b: 2 };
+ 
+                getValue(obj, "a");
+                getValue(obj, "c"); // Error
+              </script>
+            </code>  
+          </pre>
+
+          <aside class="notes">
+            Generics can accept several type variables, and in addition, we can declare a type variable that is limited by another type variable.
+            For example, here we would like to get a property from an object, given its key. We would like to make sure that we don't accidentally grab a property that doesn't exist in the object. Therefore, we will set a restriction for the second type variable K, saying that it can only accept values that are keys of the object passed by the first argument. To do this, we use the keyword "keyof".
+            In this case, when trying to call a function with a key that is not in the object, we will get an error still at the compilation stage.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Conditional Types</h2>
+          <br>
+          <pre>
+            <code class="language-typescript hljs" data-trim data-noescape data-line-numbers="1">
+              <script type="text/template">
+                SomeType extends OtherType ? TrueType : FalseType;
+              </script>
+            </code>  
+          </pre>
+
+          <aside class="notes">
+            Conditional Types are types that can take one of two values based on whether one type belongs to another. Conditional types are semantically similar to the ternary operator:
+            In the expression block, using the “extends” keyword, affiliation to the specified type is established. If the type specified to the left of the “extends” keyword is compatible with the type specified on the right side, then the conditional type will belong to the TrueType, otherwise to the FalseType. 
+            Thus, with the help of conditional types, we can create new types based on the conditions of other types, thereby expressing complex relationships between them.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Distributive Conditional Types</h2>
+          <br>
+          <pre>
+            <code class="language-typescript hljs" data-trim data-noescape data-line-numbers="1-5, 7-8">
+              <script type="text/template">
+                type T0<T> = T extends number
+                  ? 'numeric'
+                  : T extends string
+                  ? 'text'
+                  : 'other';
+                
+                const v1: T0<string | number>; // const v1: "numeric" | "text"
+                const v2: T0<string | boolean>; // const v2: "text" | "other"
+              </script>
+            </code>  
+          </pre>
+
+          <aside class="notes">
+            Conditional types that have Union Type set as a type argument are called Distributive Conditional Types. The reason for this name is that each type that makes up the combined type will be distributed in such a way that the conditional type expression is executed for each. This, in turn, can define the conditional type as Union Type.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Summary</h2>
+          <br>
+          <ul>
+            <li>More universal code</li>
+            <li>Compliance with DRY principles</li>
+            <li>Maintaining the strictness of the code and the operability of type checking.</li>
+          </ul>
+
+          <aside class="notes">
+            As a conclusion, I would like to note the main advantages that the use of generics and conditional types gives.
+            Firstly, it makes our code more universal: we can write components that can work with different types of data.
+            Secondly, they allow us to avoid code duplication, so we follow the principles of DRY.
+            Third: At the same time, we maintain the strictness of the code and the operability of type checking.
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+      // More info about initialization & config:
+      // - https://revealjs.com/initialization/
+      // - https://revealjs.com/config/
+      Reveal.initialize({
+        hash: true,
+
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+      });
+    </script>
+  </body>
+</html>
